@@ -1,24 +1,34 @@
 #!/usr/bin/python3
+"""LockBoxes module."""
+
+
 def canUnlockAll(boxes):
-    # Create a list to keep track of the boxes we can visit.
-    visited = [False] * len(boxes)
-    
-    # We can always open the first box, so mark it as visited.
-    visited[0] = True
-    
-    # Create a stack for DFS and initialize it with the keys from the first box.
-    stack = [0]
-    
-    # Start DFS
-    while stack:
-        current_box = stack.pop()
-        
-        # Iterate through the keys in the current box.
-        for key in boxes[current_box]:
-            if not visited[key]:
-                # Mark the box as visited and add it to the stack for further exploration.
-                visited[key] = True
-                stack.append(key)
-    
-    # Check if all boxes have been visited. If any box is unvisited, return False.
-    return all(visited)
+    """
+    canUnlockAll: Determines if all the boxes can be opened by\
+        the provided keys.
+
+    The box at index 0(zero) is unlocked by default. If it contains\
+        a key to the next box, we can unlock it. If it contains a key\
+        to a box that has already been unlocked, we can unlock it.
+
+    Args:
+        boxes (List[List[int]]): List of lists of keys.
+    """
+    unlockedBoxes = [False] * len(boxes)
+    unlockedBoxes[0] = True
+    keys = boxes[0]
+
+    # Check if you still have keys to unlock boxes
+    while len(keys) > 0:
+        # Pick a key and to open the box to that key
+        key = keys.pop()
+        if not isinstance(key, int) or key >= len(boxes) or key < 0:
+            continue
+        # Check if the box is locked and unlock it
+        if not unlockedBoxes[key]:
+            unlockedBoxes[key] = True
+            # Add the keys in the box to the list of keys
+            keys.extend(boxes[key])
+
+    # Return True if all boxes are unlocked
+    return all(unlockedBoxes)
