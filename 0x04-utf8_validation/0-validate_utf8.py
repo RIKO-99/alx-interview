@@ -1,32 +1,63 @@
 #!/usr/bin/python3
-"""0-validate_utf8 module."""
+"""
+Write a method that determines if a given data set
+represents a valid UTF-8 encoding.
+
+"""
 
 
 def validUTF8(data):
-    # type: (List[int]) -> bool
-    """
-    validUTF8: determines if a given data set represents a valid \
-        UTF-8 encoding.
+    """_summary_
 
     Args:
-        data: list of integers.
-
-    Returns:
-        True if data is a valid UTF-8 encoding, else return False.
+            data (list[int]): a list of integers
     """
-    num_bytes = 0
-    for num in data:
-        if num_bytes == 0:
-            if (num >> 5) == 0b110:
-                num_bytes = 1
-            elif (num >> 4) == 0b1110:
-                num_bytes = 2
-            elif (num >> 3) == 0b11110:
-                num_bytes = 3
-            elif (num >> 7) == 0b0:
-                num_bytes = 0
-        else:
-            if (num >> 6) != 0b10:
+    expected_continuation_bytes = 0
+
+    # Define bit patterns for UTF-8 encoding
+    UTF8_BIT_1 = 1 << 7  # 10000000
+    UTF8_BIT_2 = 1 << 6  # 01000000
+
+    # Loop over each byte in the input data
+    for byte in data:
+        # Initialize a mask to check for leading
+        # 1's in the current byte
+        leading_one_mask = 1 << 7
+
+        # If we are not currently expecting any
+        # continuation bytes
+        if expected_continuation_bytes == 0:
+            # Count the number of leading 1's in the
+            # current byte to determine the number of
+            # continuation bytes
+            while leading_one_mask & byte:
+                expected_continuation_bytes += 1
+                leading_one_mask = leading_one_mask >> 1
+
+            # If the byte is not a multi-byte sequence,
+            # move to the next byte
+            if expected_continuation_bytes == 0:
+                continue
+
+            # If the number of continuation bytes is not
+            # between 2 and 4, the sequence is invalid
+            if expected_continuation_bytes == 1 or\
+                    expected_continuation_bytes > 4:
                 return False
-            num_bytes -= 1
-    return num_bytes == 0
+
+        # If we are expecting continuation bytes
+        else:
+            # Check that the byte starts with a "10"
+            # prefix and not a "11" prefix
+            if not (byte & UTF8_BIT_1 and not (byte & UTF8_BIT_2)):
+                return False
+
+        # Decrement the expected number of continuation bytes
+        expected_continuation_bytes -= 1
+
+    # If we have processed all bytes and are not expecting
+    # any more continuation bytes, the sequence is valid
+    if expected_continuation_bytes == 0:
+        return True
+    else:
+        return False
