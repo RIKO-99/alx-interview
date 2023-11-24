@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 """ make change module """
 
+
 def makeChange(coins, total):
     """ fewest number of coins needed to meet total """
     if total <= 0:
         return 0
+
     # sort the coins in descending order
     coins.sort(reverse=True)
     change = 0
